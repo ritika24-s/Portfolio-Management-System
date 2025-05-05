@@ -124,6 +124,18 @@ class TradeProcessor:
             raise ValueError(f"Trade {trade_id} does not exist. Cannot transition status if it doesn't exist.")
         trade.transition_status(trade.status)
 
+    def calculate_net_quantity(self, trade: BaseTrade)-> float:
+        user_net_quantity = {}
+
+        for trade in self.trades.values():
+            if trade.user_id not in user_net_quantity:
+                user_net_quantity[trade.user_id] = {}
+
+            user_net_quantity[trade.user_id][trade.symbol] = user_net_quantity.get(trade.user_id, {}).get(trade.symbol, 0) \
+                + trade.quantity if trade.direction == "BUY" else -trade.quantity
+
+        return user_net_quantity
+            
     def process_trades(self, trade_data:List[Dict])->None:
         for trade in trade_data:
             self.add_trade(trade)
